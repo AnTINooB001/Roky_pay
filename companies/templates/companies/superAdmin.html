@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+Добро пожаловать {{name}}!
+Вы супер Админ!
+
+баланс компании {{company_balance}}
+
+ <form method="get" action="{% url 'admin:index' %}">
+    <button>Перейти к админке</button>
+ </form>
+
+{% endblock %}

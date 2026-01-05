@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+    <p>здесь вы можете отправить видео</p>
+    <style>
+    body, html {
+        height: 100%; /* Занимает всю высоту */
+        margin: 0;
+    }
+    .container {
+        display: flex;          /* Включаем Flexbox */
+        justify-content: center; /* Центрируем по горизонтали */
+        align-items: center;    /* Центрируем по вертикали */
+        height: 100vh;          /* Высота = 100% высоты viewport */
+        /* Для размещения кнопок рядом, но с пространством */
+        gap: 20px; /* Отступ между кнопками */
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    </style>
+
+    <div class="container">
+        <form method="post">
+            {% csrf_token %} {{ form.as_p }}
+             <button>Отправить на проверку</button>
+        </form>
+        <form method="get" action="{% url 'users:home' %}"> <button>Домой</button></form>
+    </div>
+
+
+
+{% endblock %}

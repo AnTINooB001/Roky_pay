@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p>Code: 403</p>
+    <p>You are has been banned in this company</p>
+    <form method="get" action="{% url 'home' %}">
+        <button>назад</button>
+    </form>
+
+{% endblock %}

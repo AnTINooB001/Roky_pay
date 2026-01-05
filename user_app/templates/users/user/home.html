@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+    <p>Добро пожаловать в роль Пользователя!</p>
+    <style>
+    body, html {
+        height: 100%; /* Занимает всю высоту */
+        margin: 0;
+    }
+    .container {
+        display: flex;          /* Включаем Flexbox */
+        justify-content: center; /* Центрируем по горизонтали */
+        align-items: center;    /* Центрируем по вертикали */
+        height: 100vh;          /* Высота = 100% высоты viewport */
+        /* Для размещения кнопок рядом, но с пространством */
+        gap: 20px; /* Отступ между кнопками */
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    </style>
+
+    <div class="container">
+        <form method="get" action="{% url 'users:send_video' %}"> <button>Отправить видео</button></form>
+        <form method="get" action="{% url 'users:profile' %}"> <button>профиль</button></form>
+    </div>
+
+
+
+{% endblock %}
