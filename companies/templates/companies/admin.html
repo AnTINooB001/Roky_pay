@@ -37,17 +37,17 @@
         
             <li>
                 
-                <form method="POST"> 
+                <form method="POST" action="{% url 'company:set_video_solution' %}"> 
                     {% csrf_token %}
-                    <input type="hidden" name="type" value="video">
-                    <input type="hidden" name="action" value="decline_video">
-                    <button>отклонить</button>
+                    <input type="hidden" name="solution" value=False>
+                    <input type="hidden" name="admin_id" value={{member.pk}}>
+                    <button>отклонить</button> 
                 </form>
 
-                <form method="POST"> 
+                <form method="POST" action="{% url 'company:set_video_solution' %}"> 
                     {% csrf_token %}
-                    <input type="hidden" name="type" value="video">
-                    <input type="hidden" name="action" value="accept_video">
+                    <input type="hidden" name="solution" value=True>
+                    <input type="hidden" name="admin_id" value={{member.pk}}>
                     <button>принять</button>
                 </form>
             </li>
@@ -56,8 +56,6 @@
             <li>
                 <form method="POST"> 
                     {% csrf_token %}
-                    <input type="hidden" name="type" value="video">
-                    <input type="hidden" name="action" value="">
                     <button>проверить следующее видео</button>
                 </form>
 

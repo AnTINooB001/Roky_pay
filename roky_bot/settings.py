@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'debug_toolbar',
+    'rest_framework',
     'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,20 +41,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+
     'user_app',
-    'videos_app',
-    'companies'
+    'companies',
+    'general'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'general.middlewares.banMiddleware.CheckUserStatusMiddleware'
+    
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'general.middlewares.banMiddleware.CheckUserStatusMiddleware',
 ]
 
 ROOT_URLCONF = 'roky_bot.urls'
@@ -126,3 +131,11 @@ STATIC_URL = 'static/'
 LOGOUT_REDIRECT_URL = 'home'
 AUTH_USER_MODEL = 'user_app.User'
 LOGIN_URL = 'home'
+
+REST_FRAMEWORK = {
+
+}
+
+INTERNAL_IPS= {
+    "127.0.0.1",
+}

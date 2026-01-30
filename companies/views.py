@@ -1,80 +1,73 @@
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
-from companies import models as comp_models
-from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from . import forms
-from videos_app import models as video_models
+from django.views.decorators.csrf import csrf_exempt
 
+import json
+
+from .services import get_company_by_name, get_or_create_company_member, get_video_to_admin_review, \
+    set_video_solution, create_and_save_user_video_to_db ,get_user_video_history, create_and_save_company_to_db_by_user_id
+
+
+@csrf_exempt
+def set_video_solution_view(request):
+    if request.method == "PATCH":
+        body_json = json.loads(request.body)
+        admin_id = body_json.get('admin_id')
+        solution = body_json.get('solution')
+        res = set_video_solution(admin_id,solution)
+    return JsonResponse({'result': res})
+
+
+def get_video_to_admin_review_view(request):
+    if request.method == 'GET':
+        json_body = json.loads(request.body)
+        admin_id = json_body.get('admin_id')
+        video = get_video_to_admin_review(admin_id)
+        if video is None:
+            return JsonResponse({'result' : None})
+        return JsonResponse({'result': {'video' : {'video_id': video.pk, 'video_link': video.link, 'video_member': video.member.user.username}}})
+
+
+@csrf_exempt
 @login_required
-def home(request, company_name):
-
-    try:
-        req_company = comp_models.Companies.objects.get(name=company_name)
-        
-    except(BaseException):
-        raise Http404()
-    
-    try:
-        member = comp_models.Memberships.objects.filter(company=req_company.pk).get(user=request.user.pk)
-
-    except(BaseException):
-        model = get_user_model()
-        user = model.objects.get(id=request.user.pk)
-        member = comp_models.Memberships(company=req_company, user=user)
-        member.save()
-
+def home_view(request, company_name):
+    company = get_company_by_name(company_name)
+    member, _ = get_or_create_company_member(company=company,user=request.user)
 # -------------------------------- SUPER USER --------------------------------------
     if member.role == 'Super Admin':
         return render(request, 'companies/superAdmin.html', {'member': member})
-    
 # -------------------------------- ADMIN --------------------------------------
     elif member.role == 'Admin':
-        context = {'member':member,}
-        if request.method == 'POST':
-            
-            action = request.POST['action']
-            type = request.POST['type']
-            solutions = video_models.Video.Solution
-
-            if type == 'video':
-                video = video_models.Video.objects.filter(admin=member).filter(solution=solutions.Wait).first()
-                if video is None:
-                    video = video_models.Video.objects.filter(admin=None).first()
-                
-                if video is None:
-                    context['review_video'] = video
-                    return render(request, 'companies/admin.html', context)
-
-                video.admin = member
-
-                if(action == 'accept_video' and video):
-                    video.solution = solutions.Approved
-                    video.save()
-                    video = None
-                    
-                if(action == 'decline_video' and video):
-                    video.solution = solutions.Declined
-                    video.save()
-                    video = None
-
-                context['review_video'] = video
-
+        context = {'member': member,}
         return render(request, 'companies/admin.html', context)
-
 # -------------------------------- USER --------------------------------------
     elif member.role == 'User':
+        history = get_user_video_history(member.pk)
+        return render(request, 'companies/user.html',{'history':history, 'member': member})
+    
 
-        form = forms.SendLinkForm()
-
-        if request.method == 'POST':
-            form = forms.SendLinkForm(request.POST)
-            if form.is_valid():
-                link = form.cleaned_data['link']
-                video_record = video_models.Video(member=member,link=link)
-                video_record.save()
+@csrf_exempt
+def create_video_by_user_view(request):
+    if request.method == 'POST':
+        try:
+            json_body = json.loads(request.body)
+            member_id = json_body.get('member_id')
+            link = json_body.get('link')
+            create_and_save_user_video_to_db(link,member_id)
+        except Exception as e:
+            return JsonResponse({'result': 'error', 'error': f'e'})
+        else:
+            return JsonResponse({'result': 'ok'})
         
-        history = video_models.Video.objects.all().filter(member=member).values_list()
-        return render(request, 'companies/user.html',{'form':form, 'history':history, 'member':member})
-    
-    
+@csrf_exempt
+def create_company_by_user_view(request):
+    if request.method == "POST":
+        json_body = json.loads(request.body)
+        name = json_body.get('name')
+        description = json_body.get('description')
+        if create_and_save_company_to_db_by_user_id(request.user.pk, name, description):
+            return JsonResponse({'result' : 'ok'})
+        else:
+            return JsonResponse({'result':'error'})
+    return JsonResponse({'lol':'lol'})
