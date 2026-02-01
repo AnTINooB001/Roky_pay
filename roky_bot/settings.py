@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'debug_toolbar',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,9 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
 
-    'user_app',
+    'apps.accounts',
     'companies',
-    'general'
+    'general',
+    'user_app'
 ]
 
 MIDDLEWARE = [
@@ -78,6 +80,29 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'roky_bot.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES' : (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME' : timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME' : timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS' : True,
+    'BLACKLIST_AFTER_ROTATION' : True,
+    'UPDATE_LAST_LOGIN' : True,
+    'ALGORITHM' : 'HS256',
+    'SIGNING_KEY' : SECRET_KEY,
+    'VERIFYING_KEY' : None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME' : 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD' : 'id',
+    'USER_ID_CLAIM' : 'user_id',
+}
 
 
 # Database
@@ -128,13 +153,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-LOGOUT_REDIRECT_URL = 'home'
-AUTH_USER_MODEL = 'user_app.User'
-LOGIN_URL = 'home'
-
-REST_FRAMEWORK = {
-
-}
+# LOGOUT_REDIRECT_URL = 'home'
+AUTH_USER_MODEL = 'accounts.User'
+# LOGIN_URL = 'home'
 
 INTERNAL_IPS= {
     "127.0.0.1",

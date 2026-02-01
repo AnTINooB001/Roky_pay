@@ -1,7 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 
-class User(AbstractUser):
+class User_app_User(models.Model):
     balance = models.BigIntegerField(default=0,name='balance')
     system_admin = models.BooleanField(default=False,db_index=True)
     

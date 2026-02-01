@@ -1,29 +1,34 @@
 from rest_framework import serializers
-from models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 
-class UserRegisterSerializer(serializers.Serializer):
+from .models import User
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    """ Сериализатор для регистрации пользователя """
     password = serializers.CharField(write_only=True) #validators = [validate_password]
     confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ('username','email','first_name', 
-                  'second_name', 'password', 'password_confirm')
+                  'second_name', 'password', 'confirm_password',)
         
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('confirm_password'):
             raise serializers.ValidationError({'password': 'password and confirm_password is dont match'})
+       
         return attrs
     
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        user = User.objects.create_user(*validated_data)
+        user = User.objects.create_user(**validated_data)
         return user
     
 
 class UserLoginSerializer(serializers.Serializer):
+    """ Сериализатор для входа пользователя """
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField()
 
@@ -48,18 +53,19 @@ class UserLoginSerializer(serializers.Serializer):
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """ Сериализоатор для профиля пользователя """
     full_name = serializers.ReadOnlyField()
 
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'first_name','second_name'
+            'id', 'username', 'email', 'first_name','second_name', 'full_name'
         )
         read_only_fields = ('id', )
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    
+    """ Сериализатор для обновления данных пользователя """
     class Meta:
         fields = ('first_name', 'second_name')
 
@@ -71,6 +77,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     
 
 class UserChangePasswordSerializer(serializers.Serializer):
+    """ Сериализатор для изменения пароля пользователя"""
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
     new_passowrd_confirm = serializers.CharField(write_only=True)
