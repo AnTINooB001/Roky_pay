@@ -2,11 +2,22 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework import generics
 import json
+
+from . import models as comp_models
 
 from .services import get_company_by_name, get_or_create_company_member, get_video_to_admin_review, \
     set_video_solution, create_and_save_user_video_to_db ,get_user_video_history, create_and_save_company_to_db_by_user_id
+from .serializers import CompanySerializer
+
+class CompanyListApiView(generics.ListCreateAPIView):
+    queryset=comp_models.Companies.objects.all()
+    serializer_class=CompanySerializer
+
+    def perform_create(self, serializer):
+        new_company = serializer.save()
+        
 
 
 @csrf_exempt
