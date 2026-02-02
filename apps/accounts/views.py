@@ -42,8 +42,9 @@ class LoginView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
 
-        login(request, request.user)
+        login(request, user)
         refresh = RefreshToken.for_user(request.user)
 
         return Response({

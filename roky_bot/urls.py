@@ -16,8 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from general import urls as gen_urls
-from user_app import urls as users_urls
 from companies import urls as comp_urls
 from . import settings
 from debug_toolbar.toolbar import debug_toolbar_urls
@@ -26,9 +24,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 urlpatterns = [
     path('admin/', admin.site.urls, name='superAdmin'),
     path('api/v1/auth/', include('apps.accounts.urls')),
-    path('users/', include(users_urls, namespace='users')),
     path('companies/',include(comp_urls, namespace='company')),
-    path('', include(gen_urls)),
 ]
 
 if settings.DEBUG:

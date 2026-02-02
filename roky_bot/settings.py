@@ -45,8 +45,6 @@ INSTALLED_APPS = [
 
     'apps.accounts',
     'companies',
-    'general',
-    'user_app'
 ]
 
 MIDDLEWARE = [
@@ -59,7 +57,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'general.middlewares.banMiddleware.CheckUserStatusMiddleware',
 ]
 
 ROOT_URLCONF = 'roky_bot.urls'
@@ -67,7 +64,7 @@ ROOT_URLCONF = 'roky_bot.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'roky_bot' / 'templates', BASE_DIR / 'general' / 'templates'],
+        'DIRS': [BASE_DIR / 'roky_bot' / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -12,13 +12,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username','email','first_name', 
+        fields = ('username','first_name', 
                   'second_name', 'password', 'confirm_password',)
         
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('confirm_password'):
             raise serializers.ValidationError({'password': 'password and confirm_password is dont match'})
-       
         return attrs
     
     def create(self, validated_data):
@@ -30,26 +29,26 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     """ Сериализатор для входа пользователя """
     password = serializers.CharField(write_only=True)
-    email = serializers.EmailField()
+    username = serializers.CharField()
 
     def validate(self, attrs):
-        email = attrs['email']
+        username = attrs['username']
         password = attrs['password']
 
-        if email and password:
+        if username and password:
             user = authenticate(
                 self.context.get('request'),
-                username=email,
+                username=username,
                 password=password
             )
             if user:
                 attrs['user'] = user
                 return attrs
             else:
-                raise ValueError('email or password is incorrect')
+                raise serializers.ValidationError('username or password is incorrect')
 
         else:
-            raise serializers.ValidationError('required email and password')
+            raise serializers.ValidationError('required username and password')
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -59,7 +58,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'first_name','second_name', 'full_name'
+            'id', 'username', 'first_name','second_name', 'full_name'
         )
         read_only_fields = ('id', )
 
@@ -74,7 +73,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-    
+
 
 class UserChangePasswordSerializer(serializers.Serializer):
     """ Сериализатор для изменения пароля пользователя"""
@@ -82,18 +81,21 @@ class UserChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     new_passowrd_confirm = serializers.CharField(write_only=True)
 
+
     def validate_old_password(self, value):
         user = self.context.get('request').user
         if not user.check_password(value):
             raise serializers.ValidationError('old password is incorrect')
         return value
     
+
     def validate(self, attrs):
         new_password = attrs['new_password']
         if new_password != attrs['new_passowrd_confirm']:
             raise serializers.ValidationError('New password and confirm password in not match')
         else:
             return attrs
+        
         
     def save(self):
         user = self.context.get('request').user
