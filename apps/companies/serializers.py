@@ -1,25 +1,19 @@
 from rest_framework import serializers
-from . import models as comp_models
+from .models import (
+    Company,
+    Membership,
+    Video
+)
 
 from .services import get_or_create_membership, create_company_by_user
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
-        model=comp_models.Companies
+        model=Company
         fields= (
             'id', 'name','description','balance'
         )
         read_only_fields=('id',)
-
-    def create(self,validated_data):
-        try:
-            company, _ = create_company_by_user(
-                self.context['request'].user.id,
-                **validated_data
-            )
-        except Exception as e:
-            raise serializers.ValidationError({'details': str(e)})
-        return company
 
 
 class MembershipSerializer(serializers.ModelSerializer):
@@ -28,12 +22,11 @@ class MembershipSerializer(serializers.ModelSerializer):
     company_id = serializers.IntegerField()
 
     class Meta:
-        model = comp_models.Memberships
+        model = Membership
         fields= (
             'id','user_info', 'company_id','role', 'is_active','company_info'
         )
         read_only_fields=('id',)
-
 
     def get_user_info(self, obj):
         user = obj.user
@@ -41,7 +34,6 @@ class MembershipSerializer(serializers.ModelSerializer):
             'id': user.id,
             'username': user.username,
         }
-    
 
     def get_company_info(serf, obj):
         company = obj.company
@@ -51,32 +43,24 @@ class MembershipSerializer(serializers.ModelSerializer):
         }
     
 
-    def create(self,validated_data):
-        user = self.context.get('request').user
-        company_id = validated_data.get('company_id')
-        validated_data.pop('company_id')
-
-        instance, created = get_or_create_membership(user_id=user.id,
-                                                     company_id=company_id,
-                                                     allow_create=True,
-                                                     **validated_data)
-        return instance, created
-    
-
 class MembershipUpdateSerializer(serializers.ModelSerializer):
     member_id = serializers.IntegerField()
-    role = serializers.ChoiceField(choices=comp_models.Memberships.Roles.choices)
+    role = serializers.ChoiceField(choices=Membership.Roles.choices)
     is_active = serializers.BooleanField()
     company_id = serializers.IntegerField()
 
     class Meta:
-        model = comp_models.Memberships
+        model = Membership
         fields = (
             'member_id', 'role', 'company_id', 'is_active'
         )
 
     def validate(self, attrs):
-        target_member = comp_models.Memberships.objects.get(id=attrs['member_id'])
+        try:
+            target_member = Membership.objects.get(id=attrs['member_id'])
+        except:
+            raise serializers.ValidationError('member is not exist')
+
         if target_member.company.id != attrs['company_id']:
             raise serializers.ValidationError('company_id and member company is not match')
 
@@ -91,7 +75,7 @@ class VideoSerializer(serializers.ModelSerializer):
     company_id = serializers.IntegerField(write_only=True)
     
     class Meta:
-        model = comp_models.Video
+        model = Video
         fields = (
             'id','member_info','user_info', 'link','date','company_id'
         )
@@ -99,7 +83,6 @@ class VideoSerializer(serializers.ModelSerializer):
             'id',
         )
 
-    
     def get_user_info(self,obj):
         user = obj.member.user
         return {
@@ -115,7 +98,6 @@ class VideoSerializer(serializers.ModelSerializer):
             'is_active': member.is_active
         }
     
-
     def validate_link(self,value):
         if 'http://' in value or 'https://' in value:
             return value
@@ -124,15 +106,14 @@ class VideoSerializer(serializers.ModelSerializer):
     
 
 class VideoUpdateSerializer(serializers.ModelSerializer):
-    solution = serializers.ChoiceField(comp_models.Video.Solution.choices)
+    solution = serializers.ChoiceField(Video.Solution.choices)
     company_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = comp_models.Video
+        model = Video
         fields = (
             'id','solution', 'member', 'date','company_id'
         )
-
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
